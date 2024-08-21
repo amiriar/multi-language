@@ -28,6 +28,25 @@ dayjs.extend(jalaliday);
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @Get()
+  @Roles('ADMIN', 'SUPERADMIN')
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'List of all users.', type: [User] })
+  async findAll(): Promise<User[]> {
+    return await this.userService.findAll();
+  }
+
+  @Get(':id')
+  @Roles('ADMIN', 'SUPERADMIN')
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiResponse({ status: 200, description: 'The found user.', type: User })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  async findOne(@Param('id') id: string): Promise<User> {
+    return await this.userService.findOne(id);
+  }
+
   @Post()
   @Roles('ADMIN', 'SUPERADMIN')
   @UseGuards(RolesGuard)
@@ -84,25 +103,6 @@ export class UsersController {
     }
 
     return await this.userService.update(id, updateUserDto);
-  }
-
-  @Get()
-  @Roles('ADMIN', 'SUPERADMIN')
-  @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'List of all users.', type: [User] })
-  async findAll(): Promise<User[]> {
-    return await this.userService.findAll();
-  }
-
-  @Get(':id')
-  @Roles('ADMIN', 'SUPERADMIN')
-  @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Get user by ID' })
-  @ApiResponse({ status: 200, description: 'The found user.', type: User })
-  @ApiResponse({ status: 404, description: 'User not found.' })
-  async findOne(@Param('id') id: string): Promise<User> {
-    return await this.userService.findOne(id);
   }
 
   @Delete(':id')
