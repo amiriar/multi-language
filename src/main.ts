@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter } from './exceptions/all-exceptions.filter';
+import { AllExceptionsFilter } from './common/exceptions/all-exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -17,16 +17,16 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('WikiFarhang Backend - NestJS')
-    .setDescription('The WikiFarhang API Made By Amirreza Abdolrahimi')
+    .setTitle('MultiLanguage App API - NestJS')
+    .setDescription('MultiLanguage App API Made By Amirreza Abdolrahimi')
     .setVersion('1.0')
-    .addBearerAuth()
+    // .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document, {
     jsonDocumentUrl: 'swagger/json',
   });
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();
