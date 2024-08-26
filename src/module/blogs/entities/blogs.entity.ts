@@ -3,15 +3,24 @@ import { Document } from 'mongoose';
 
 export type BlogDocument = Blog & Document;
 
-export enum TodoStatus {
-  PENDING = 'Pending',
-  IN_PROGRESS = 'In Progress',
-  COMPLETED = 'Completed',
+export enum BodySchema {
+  // body logic here
 }
+
+// comments schema here too
+// comments should have:
+// نام نویسنده، تصویر نویسنده، تاریخ نوشتن کامنت، تعداد لایک های کامنت، متن  کامنت، و قابلیت پاسخ دادن به کامنت به همراه پیجینیشن
 
 @Schema({ timestamps: true })
 export class Blog {
-  @Prop({ required: true, minlength: 3, maxlength: 100 })
+
+  @Prop({ required: false })
+  timeToRead: number;
+
+  @Prop({ required: false })
+  shortLink: string;
+
+  @Prop({ required: true })
   title: string;
 
   @Prop({ required: false, maxlength: 500 })
@@ -19,12 +28,27 @@ export class Blog {
 
   @Prop({ required: false })
   image?: string;
+  
+  // Body logic HERE 
+  
+  // @Prop({ required: true, enum: BodySchema })
+  // body: BodySchema;
 
-  @Prop({ required: false, type: Date })
-  date?: Date;
+  // Body logic HERE 
 
-  @Prop({ required: true, enum: TodoStatus, default: TodoStatus.PENDING })
-  status: TodoStatus;
+  @Prop({ required: false })
+  tags: [string];
+  
+  @Prop({ required: false })
+  likes: [string];
+
+  // @Prop({ required: false })
+  // comments: [string];
+  
+  // / // // / / // /  / / / // / 
+  @Prop({ required: false })
+  date?: string;
+
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);
