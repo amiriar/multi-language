@@ -1,54 +1,67 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type BlogDocument = Blog & Document;
 
-export enum BodySchema {
-  // body logic here
+// Schema for Comment
+@Schema({ timestamps: true })
+export class Comment {
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  author: string;
+
+  @Prop({ required: true })
+  text: string;
+
+  @Prop({ default: 0 })
+  likes: number;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment' }] })
+  replies?: Types.ObjectId[];  // Self-referencing field for nested comments
+
+  @Prop({ required: false })
+  date: string;
 }
 
-// comments schema here too
-// comments should have:
-// نام نویسنده، تصویر نویسنده، تاریخ نوشتن کامنت، تعداد لایک های کامنت، متن  کامنت، و قابلیت پاسخ دادن به کامنت به همراه پیجینیشن
+export const CommentSchema = SchemaFactory.createForClass(Comment);
 
 @Schema({ timestamps: true })
 export class Blog {
-
-  @Prop({ required: false })
-  timeToRead: number;
-
-  @Prop({ required: false })
-  shortLink: string;
-
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: false, maxlength: 500 })
+  @Prop({ maxlength: 500 })
   description?: string;
 
-  @Prop({ required: false })
+  @Prop()
   image?: string;
   
-  // Body logic HERE 
-  
-  // @Prop({ required: true, enum: BodySchema })
-  // body: BodySchema;
-
-  // Body logic HERE 
+  @Prop({ required: true })
+  body: string;  // This can be an HTML string, JSON, or a structured format for various content types
 
   @Prop({ required: false })
-  tags: [string];
-  
-  @Prop({ required: false })
-  likes: [string];
+  tags: string[];
 
-  // @Prop({ required: false })
-  // comments: [string];
-  
-  // / // // / / // /  / / / // / 
-  @Prop({ required: false })
-  date?: string;
+  @Prop({ default: 0 })
+  likesCount: number;
 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  likes?: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment' }] })
+  comments?: Types.ObjectId[];  // Reference to the Comment schema
+
+  @Prop({ required: false })
+  timeToRead?: number;
+
+  @Prop({ required: false })
+  shortLink?: string;
+
+  @Prop()
+  authorId: Types.ObjectId; // Reference to the User schema
+
+  @Prop({ required: false })
+  date: string;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);
+BlogSchema.index({ title: 1 });  // Example of creating an index

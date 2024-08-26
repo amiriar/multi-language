@@ -1,72 +1,66 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, ObjectId } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ required: false })
+  @Prop({ required: true, unique: true })
   username: string;
 
-  @Prop({ required: false })
-  firstname: string;
-
-  @Prop({ required: false })
-  lastname: string;
-
-  @Prop({ required: false })
-  job: string;
-
-  @Prop({ required: false })
-  followers: [ObjectId];
-
-  @Prop({ required: false })
+  @Prop({ required: true })
   email: string;
 
-  @Prop({ required: false })
-  linkedin: string;
-
-  @Prop({ required: false })
-  twitter: string;
-
-  @Prop({ required: false })
-  savedPosts: [ObjectId];
-
-  @Prop({ required: false })
-  LikedPosts: [ObjectId];
-
-  @Prop({ required: false })
-  password: string;
+  @Prop({ required: true })
+  password: string;  // Remember to hash this in a middleware or service
   
+  @Prop()
+  firstname?: string;
+
+  @Prop()
+  lastname?: string;
+
+  @Prop()
+  job?: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  followers?: Types.ObjectId[];
+
+  @Prop()
+  linkedin?: string;
+
+  @Prop()
+  twitter?: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Blog' }] })
+  savedPosts?: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Blog' }] })
+  likedPosts?: Types.ObjectId[];
+
   @Prop({ required: true, unique: true })
   phoneNumber: string;
 
-  @Prop({ required: false })
-  profile: string;
+  @Prop()
+  profile?: string;
 
   @Prop({ default: "USER" })
   role: string;
   
-  @Prop({ required: false })
-  lastDateIn: string;
+  @Prop()
+  lastDateIn?: string;
 
-  @Prop({ required: false })
-  madeIn: string;
+  @Prop()
+  madeIn?: string;
 
-  @Prop({ required: false })
-  otp: string;
+  @Prop()
+  otp?: string;
 
-  @Prop({ required: false })
-  otpExpiresAt: Date;
+  @Prop()
+  otpExpiresAt?: Date;
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
-
-  @Prop({ default: Date.now })
-  updatedAt: Date;
-
-  @Prop({ required: false })
-  refreshToken: string; 
+  @Prop()
+  refreshToken?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
