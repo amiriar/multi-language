@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './module/users/users.module';
-import { TodoModule } from './module/todo/todo.module';
+import { TodoModule } from './module/blogs/blogs.module';
 import { AuthModule } from './module/auth/auth.module';
 
 @Module({

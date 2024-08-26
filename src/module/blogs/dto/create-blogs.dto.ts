@@ -1,15 +1,29 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDateString, IsEnum, MinLength, MaxLength } from 'class-validator';
-import { TodoStatus } from '../entities/todo.entity';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  IsEnum,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
+import { TodoStatus } from '../entities/blogs.entity';
 
-export class CreateTodoDto {
-  @ApiProperty({ description: 'Title of the todo', minLength: 3, maxLength: 100 })
+export class CreateBlogDto {
+  @ApiProperty({
+    description: 'Title of the todo',
+    minLength: 3,
+    maxLength: 100,
+  })
   @IsString()
   @MinLength(3)
   @MaxLength(100)
   title: string;
 
-  @ApiPropertyOptional({ description: 'Description of the todo', maxLength: 500 })
+  @ApiPropertyOptional({
+    description: 'Description of the todo',
+    maxLength: 500,
+  })
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -20,7 +34,11 @@ export class CreateTodoDto {
   @IsString()
   image?: string;
 
-  @ApiPropertyOptional({ description: 'Due date of the todo', type: String, format: 'date-time' })
+  @ApiPropertyOptional({
+    description: 'Due date of the todo',
+    type: String,
+    format: 'date-time',
+  })
   @IsOptional()
   @IsDateString()
   date?: string;

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type TodoDocument = Todo & Document;
+export type BlogDocument = Blog & Document;
 
 export enum TodoStatus {
   PENDING = 'Pending',
@@ -10,7 +10,7 @@ export enum TodoStatus {
 }
 
 @Schema({ timestamps: true })
-export class Todo {
+export class Blog {
   @Prop({ required: true, minlength: 3, maxlength: 100 })
   title: string;
 
@@ -27,4 +27,4 @@ export class Todo {
   status: TodoStatus;
 }
 
-export const TodoSchema = SchemaFactory.createForClass(Todo);
+export const BlogSchema = SchemaFactory.createForClass(Blog);
