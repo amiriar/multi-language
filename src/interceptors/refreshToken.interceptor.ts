@@ -23,7 +23,7 @@ export class TokenInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
-    const cookies = request.headers?.cookie?.split(';') || [];
+    const cookies = request.headers?.cookie?.split(';') || [];    
     const accessTokenCookie = cookies.find((cookie: string) =>
       cookie.trim().startsWith('accessToken='),
     );
@@ -40,22 +40,29 @@ export class TokenInterceptor implements NestInterceptor {
         secret: process.env.JWT_SECRET_KEY,
       });
 
-      const user = this.usersService.findOne(decodedToken.id);
-      request.user = user;
-      return next.handle(); // Token is valid, proceed with the request
+      this.usersService.findOne(decodedToken.id).then((res) => {
+        request.user = res;
+        return next.handle(); // Token is valid, proceed with the request
+      }).catch((err) => {
+        console.log(err);
+      });
+      
     } catch (err) {
+      
       if (err.name === 'TokenExpiredError') {
         // Token expired, refresh the access token
         const decodedToken = this.jwtService.decode(accessToken) as {
           id: string;
         };
-
+        
         const userId = decodedToken?.id;
 
         if (!userId) {
           throw new UnauthorizedException('Invalid token structure.');
         }
 
+        
+        
         return from(this.usersService.findOne(userId)).pipe(
           switchMap((user) => {
             if (!user || !user.refreshToken) {
@@ -66,6 +73,8 @@ export class TokenInterceptor implements NestInterceptor {
             
             return from(this.authService.refreshTokens(user.refreshToken)).pipe(
               switchMap(({ accessToken }) => {
+                console.log(accessToken);
+                
                 response.cookie('accessToken', accessToken, {
                   httpOnly: true,
                   secure: process.env.NODE_ENV === "production" ? true : false, // Set to true if your app is served over HTTPS
@@ -78,16 +87,19 @@ export class TokenInterceptor implements NestInterceptor {
 
                 const user = this.usersService.findOne(decodedToken.id);
                 request.user = user;
+                
 
                 return next.handle();
               }),
             );
           }),
-          catchError(() => {
+          catchError((err) => {
+            console.log(err);
             return throwError(() => new UnauthorizedException('Unauthorized'));
           }),
         );
       } else {
+        
         throw new UnauthorizedException('Unauthorized');
       }
     }

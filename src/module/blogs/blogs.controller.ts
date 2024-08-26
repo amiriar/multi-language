@@ -8,30 +8,36 @@ import {
   Delete,
   UseInterceptors,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
 import * as jalaliday from 'jalaliday';
-import { request } from 'express';
 import { BlogsService } from './blogs.service';
 import { Blog } from './entities/blogs.entity';
 import { CreateBlogDto } from './dto/create-blogs.dto';
 import { UpdateBlogDto } from './dto/update-blogs.dto';
+import { TokenInterceptor } from 'src/interceptors/refreshToken.interceptor';
+import { TokenMiddleware } from 'src/middleware/token.middleware';
+import { request } from 'express';
 
 dayjs.extend(jalaliday);
 
 @ApiTags('blogs')
 @Controller('blog')
+// @UseInterceptors(TokenInterceptor)
 @ApiBearerAuth()
 export class BlogsController {
   constructor(private readonly blogService: BlogsService) {}
 
   @Post()
+  // @UseGuards(TokenMiddleware)
   @ApiOperation({ summary: 'Create a new blog' })
   @ApiResponse({
     status: 201,
@@ -39,14 +45,18 @@ export class BlogsController {
     type: Blog,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  create(@Body() createBlogDto: CreateBlogDto) {
+  @ApiBody({ type: CreateBlogDto })
+  create(@Body() createBlogDto: CreateBlogDto, @Req() req: Request) { // Inject the request object using @Req()
     const persianDate = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
     // @ts-ignore
-    const user = request.user.id;
-    const newData = { ...createBlogDto, persianDate, user };
+    console.log(req.user); // Access req.user directly instead of global request
+    
+    // @ts-ignore
+    const user = req.user._id; // Access user from req.user
+    const newData = { ...createBlogDto, persianDate, authorId: user };
     return this.blogService.create(newData);
   }
-
+  
   @Get()
   @ApiOperation({ summary: 'Retrieve all blogs' })
   @ApiResponse({
@@ -78,6 +88,7 @@ export class BlogsController {
     type: Blog,
   })
   @ApiResponse({ status: 404, description: 'Blog not found' })
+  @ApiBody({ type: UpdateBlogDto })
   update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
     return this.blogService.update(id, updateBlogDto);
   }
