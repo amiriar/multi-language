@@ -95,30 +95,28 @@ export class AuthService {
     return await this.userModel.findByIdAndUpdate(userId, { refreshToken: null });
   }
 
-  async refreshTokens(refreshToken: string): Promise<{ accessToken: string }> {
+  async refreshTokens(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.REFRESH_TOKEN_SECRET_KEY,
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET_KEY,
       });
-      const user = await this.userModel.findById(payload.id);
-      
-      if (!user) {
-        throw new UnauthorizedException('User not found');
+
+      const user = await this.usersService.findOne(decoded.id) as UserDocument;
+
+      if (!user || user.refreshToken !== refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token');
       }
-      
+
       const newAccessToken = this.jwtService.sign(
-        { id: user._id, role: user.role },
-        { secret: process.env.JWT_SECRET_KEY, expiresIn: '1h' }, // 30 minutes expiry
+        { id: user.id },
+        { secret: process.env.JWT_SECRET_KEY, expiresIn: '15m' },
       );
 
       return { accessToken: newAccessToken };
-    } catch (err) {
-      console.log(err);
-      
+    } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
-
   // OTP
 
   generateOtp(): string {

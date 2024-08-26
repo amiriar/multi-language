@@ -8,6 +8,8 @@ import {
   Req,
   Get,
   UseInterceptors,
+  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -24,7 +26,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserDocument } from '../users/entities/user.entity';
 import * as dotenv from 'dotenv';
-import { TokenInterceptor } from 'src/interceptors/refreshToken.interceptor';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 dotenv.config();
 dayjs.extend(jalaliday);
@@ -94,22 +96,40 @@ export class AuthController {
     @Body('code') code: string,
     @Res() res: Response,
   ) {
-    const lastDateIn = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
+    try {
+      const lastDateIn = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
 
-    const user = await this.authService.validateUser(phone, code, lastDateIn);
+      // Validate user credentials
+      const user = await this.authService.validateUser(phone, code, lastDateIn);
 
-    const { accessToken } = await this.authService.signTokens(user);
+      if (!user) {
+        return res
+          .status(401)
+          .json({ message: 'Invalid OTP or phone number.' });
+      }
 
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days
-    });
+      // Generate access and refresh tokens
+      const { accessToken, refreshToken } =
+        await this.authService.signTokens(user);
 
-    // Send a success response
-    res.status(200).send({ message: 'Login successful' });
+      // Set access token in httpOnly cookie
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days
+        secure: process.env.NODE_ENV === 'production', // Ensure cookies are secure in production
+        // sameSite: 'strict',
+      });
+
+      // Send success response
+      res.status(200).json({ message: 'Login successful', refreshToken });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(401).json({ message: 'Invalid OTP or phone number.' });
+    }
   }
 
   @Post('logout')
+  @UseGuards(AuthGuard)
   @HttpCode(200)
   @ApiOperation({ summary: 'Logout the user' })
   @ApiBearerAuth()
@@ -146,8 +166,40 @@ export class AuthController {
     return this.authService.changePassword(oldPassword, newPassword);
   }
 
+  @Post('refresh-token')
+  @UseGuards(AuthGuard)
+  @Post('change-pass')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'makes accessToken based on refresh token' })
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      properties: {
+        refreshToken: { type: 'string', example: '' },
+      },
+    },
+  })
+  async refreshToken(
+    @Res() res: Response,
+    @Body('refreshToken') refreshToken: string,
+  ) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is missing');
+    }
+
+    const { accessToken } = await this.authService.refreshTokens(refreshToken);
+    
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days
+      secure: process.env.NODE_ENV === 'production',
+      // sameSite: 'strict',
+    });
+    return res.status(200).json({ message: "کوکی جدید ست شد" })
+  }
+
   @Get('whoami')
-  @UseInterceptors(TokenInterceptor)
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @HttpCode(200)
   @ApiOperation({ summary: 'Get the user info' })
@@ -155,7 +207,7 @@ export class AuthController {
   async whoami(@Req() req: Request) {
     // req.user is populated by the guard
     const user = req?.user;
-    
+
     return user;
   }
 }

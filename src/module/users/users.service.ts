@@ -46,7 +46,7 @@ export class UsersService {
     if (!result) {
       throw new NotFoundException('User not found');
     }
-    return result
+    return result;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -54,5 +54,11 @@ export class UsersService {
       .findByIdAndUpdate(id, updateUserDto)
       .exec();
     return userData;
+  }
+  async updateRefreshToken(
+    userId: string,
+    refreshToken: string | null,
+  ): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, {refreshToken}).exec();
   }
 }

@@ -16,15 +16,16 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import * as dayjs from 'dayjs';
 import * as jalaliday from 'jalaliday';
-import { TokenInterceptor } from 'src/interceptors/refreshToken.interceptor';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RolesGuard } from 'src/guard/roles.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 dayjs.extend(jalaliday);
 
 @ApiTags('(Admin Panel) Users')
 @Controller('users')
-@UseInterceptors(TokenInterceptor)
+// @UseInterceptors(TokenInterceptor)
+@UseGuards(AuthGuard)
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 

@@ -20,7 +20,7 @@ async function bootstrap() {
     .setTitle('MultiLanguage App API - NestJS')
     .setDescription('MultiLanguage App API Made By Amirreza Abdolrahimi')
     .setVersion('1.0')
-    // .addBearerAuth()
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

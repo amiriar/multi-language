@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  UseInterceptors,
   UseGuards,
   Req,
 } from '@nestjs/common';
@@ -23,15 +22,13 @@ import { BlogsService } from './blogs.service';
 import { Blog } from './entities/blogs.entity';
 import { CreateBlogDto } from './dto/create-blogs.dto';
 import { UpdateBlogDto } from './dto/update-blogs.dto';
-import { TokenInterceptor } from 'src/interceptors/refreshToken.interceptor';
-import { TokenMiddleware } from 'src/middleware/token.middleware';
-import { request } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 dayjs.extend(jalaliday);
 
 @ApiTags('blogs')
 @Controller('blog')
-// @UseInterceptors(TokenInterceptor)
+@UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class BlogsController {
   constructor(private readonly blogService: BlogsService) {}
@@ -46,17 +43,15 @@ export class BlogsController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiBody({ type: CreateBlogDto })
-  create(@Body() createBlogDto: CreateBlogDto, @Req() req: Request) { // Inject the request object using @Req()
+  create(@Body() createBlogDto: CreateBlogDto, @Req() req: Request) {
+    // Inject the request object using @Req()
     const persianDate = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
-    // @ts-ignore
-    console.log(req.user); // Access req.user directly instead of global request
-    
     // @ts-ignore
     const user = req.user._id; // Access user from req.user
     const newData = { ...createBlogDto, persianDate, authorId: user };
     return this.blogService.create(newData);
   }
-  
+
   @Get()
   @ApiOperation({ summary: 'Retrieve all blogs' })
   @ApiResponse({
