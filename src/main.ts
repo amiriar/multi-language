@@ -3,10 +3,15 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/exceptions/all-exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express'; // Import NestExpressApplication
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Now you can use useStaticAssets
+  app.useStaticAssets(join(__dirname, '..', 'uploads'));
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -27,6 +32,7 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document, {
     jsonDocumentUrl: 'swagger/json',
   });
+
   await app.listen(3001);
 }
 bootstrap();
