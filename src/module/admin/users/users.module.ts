@@ -3,10 +3,10 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { User, UserSchema } from './entities/user.entity';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Otp, OtpSchema } from 'src/otherEntities/Otp.entity';
-import { AuthService } from '../auth/auth.service';
+import { Otp, OtpSchema } from 'src/module/otherEntities/Otp.entity';
+import { AuthService } from '../../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { Role, RoleSchema } from 'src/otherEntities/role.entity';
+import { Role, RoleSchema } from 'src/module/otherEntities/role.entity';
 
 @Module({
   imports: [

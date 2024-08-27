@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UseGuards,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -22,11 +23,12 @@ import {
 } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
 import * as jalaliday from 'jalaliday';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../admin/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserDocument } from '../users/entities/user.entity';
+import { UserDocument } from '../admin/users/entities/user.entity';
 import * as dotenv from 'dotenv';
-import { AuthGuard } from 'src/guard/auth.guard';
+import { AuthGuard } from 'src/common/guard/auth.guard';
+import { SmsService } from 'src/common/sms/sms.service';
 
 dotenv.config();
 dayjs.extend(jalaliday);
@@ -38,6 +40,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
     private readonly userService: UsersService,
+    private readonly SmsService: SmsService,
   ) {}
 
   @Post('send-otp')
@@ -65,12 +68,15 @@ export class AuthController {
     if (!user) {
       user = await this.userService.createUser(phone, madeIn);
     }
+    if (new Date() < user.otpExpiresAt) {
+      throw new ForbiddenException('هنوز کد قبلی شما منقضی نشده است.');
+    }
 
     const otp = this.authService.generateOtp();
     // @ts-ignore
     await this.authService.saveOtp(user._id, otp);
 
-    await this.authService.sendOtpToPhone(phone, otp);
+    await this.SmsService.sendSMS(phone, otp);
 
     return {
       message: 'OTP با موفقیت ارسال شد.',
@@ -161,11 +167,11 @@ export class AuthController {
   }
 
   @Post('refresh-token')
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Post('change-pass')
   @HttpCode(200)
   @ApiOperation({ summary: 'makes accessToken based on refresh token' })
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiBody({
     schema: {
       properties: {
@@ -182,26 +188,14 @@ export class AuthController {
     }
 
     const { accessToken } = await this.authService.refreshTokens(refreshToken);
-    
+
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days
       secure: process.env.NODE_ENV === 'production',
       // sameSite: 'strict',
     });
-    return res.status(200).json({ message: "کوکی جدید ست شد" })
+    return res.status(200).json({ message: 'کوکی جدید ست شد' });
   }
 
-  @Get('whoami')
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth()
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Get the user info' })
-  @ApiResponse({ status: 200, description: 'User info.' })
-  async whoami(@Req() req: Request) {
-    // req.user is populated by the guard
-    const user = req?.user;
-
-    return user;
-  }
 }

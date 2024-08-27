@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Role, RoleDocument } from 'src/otherEntities/role.entity';
+import { Role, RoleDocument } from 'src/module/otherEntities/role.entity';
 import { User, UserDocument } from '../entities/user.entity';
 
 @Injectable()

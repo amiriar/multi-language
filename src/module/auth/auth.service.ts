@@ -9,11 +9,11 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from '../users/entities/user.entity';
-import { Role, RoleDocument } from 'src/otherEntities/role.entity';
-import { UsersService } from '../users/users.service';
+import { User, UserDocument } from '../admin/users/entities/user.entity';
+import { Role, RoleDocument } from 'src/module/otherEntities/role.entity';
+import { UsersService } from '../admin/users/users.service';
 import * as dotenv from 'dotenv';
-import { Otp, OtpDocument } from 'src/otherEntities/Otp.entity';
+import { Otp, OtpDocument } from 'src/module/otherEntities/Otp.entity';
 import { request } from 'express';
 dotenv.config();
 
@@ -92,7 +92,9 @@ export class AuthService {
   }
 
   async clearRefreshToken(userId: string) {
-    return await this.userModel.findByIdAndUpdate(userId, { refreshToken: null });
+    return await this.userModel.findByIdAndUpdate(userId, {
+      refreshToken: null,
+    });
   }
 
   async refreshTokens(refreshToken: string) {
@@ -101,7 +103,9 @@ export class AuthService {
         secret: process.env.JWT_REFRESH_SECRET_KEY,
       });
 
-      const user = await this.usersService.findOne(decoded.id) as UserDocument;
+      const user = (await this.usersService.findOne(
+        decoded.id,
+      )) as UserDocument;
 
       if (!user || user.refreshToken !== refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');

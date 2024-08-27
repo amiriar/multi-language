@@ -22,7 +22,7 @@ import { BlogsService } from './blogs.service';
 import { Blog } from './entities/blogs.entity';
 import { CreateBlogDto } from './dto/create-blogs.dto';
 import { UpdateBlogDto } from './dto/update-blogs.dto';
-import { AuthGuard } from 'src/guard/auth.guard';
+import { AuthGuard } from 'src/common/guard/auth.guard';
 
 dayjs.extend(jalaliday);
 

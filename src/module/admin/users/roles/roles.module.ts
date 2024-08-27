@@ -4,11 +4,11 @@ import { RolesService } from './roles.service';
 import { RolesController } from './roles.controller';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
-import { Role, RoleSchema } from 'src/otherEntities/role.entity';
+import { Role, RoleSchema } from 'src/module/otherEntities/role.entity';
 import { User, UserSchema } from '../entities/user.entity';
 import { AuthService } from 'src/module/auth/auth.service';
 import { UsersService } from '../users.service';
-import { Otp, OtpSchema } from 'src/otherEntities/Otp.entity';
+import { Otp, OtpSchema } from 'src/module/otherEntities/Otp.entity';
 
 dotenv.config();
 

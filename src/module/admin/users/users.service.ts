@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './entities/user.entity';
-import { Otp, OtpDocument } from 'src/otherEntities/Otp.entity';
+import { Otp, OtpDocument } from 'src/module/otherEntities/Otp.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -59,6 +59,6 @@ export class UsersService {
     userId: string,
     refreshToken: string | null,
   ): Promise<void> {
-    await this.userModel.findByIdAndUpdate(userId, {refreshToken}).exec();
+    await this.userModel.findByIdAndUpdate(userId, { refreshToken }).exec();
   }
 }
