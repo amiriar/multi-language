@@ -20,7 +20,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const authorizationHeader = request.headers.authorization;
-
+    
     if (!authorizationHeader) {
       throw new UnauthorizedException('لطفا وارد حساب کاربری خود شوید.');
     }
@@ -44,7 +44,7 @@ export class AuthGuard implements CanActivate {
       request.user = user;
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Unauthorized');
+      throw new UnauthorizedException('jwt expired');
     }
   }
 }

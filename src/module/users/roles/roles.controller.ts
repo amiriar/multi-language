@@ -1,11 +1,13 @@
 import { Body, Controller, Get, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { RolesService } from './roles.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { RolesGuard } from 'src/guard/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/otherEntities/role.entity';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('roles')
+@UseGuards(AuthGuard)
 @ApiTags('(Admin Panel) Roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
@@ -16,6 +18,7 @@ export class RolesController {
   @ApiOperation({ summary: 'Get all roles' })
   @ApiResponse({ status: 200, description: 'Successfully retrieved roles', type: Role, isArray: true })
   @ApiResponse({ status: 403, description: 'Forbidden. Unauthorized access.' })
+  @ApiBearerAuth()
   async findAll(): Promise<Role[]> {
     return this.rolesService.findAll();
   }
@@ -28,6 +31,7 @@ export class RolesController {
   @ApiResponse({ status: 200, description: 'Successfully retrieved role', type: Role })
   @ApiResponse({ status: 403, description: 'Forbidden. Unauthorized access.' })
   @ApiResponse({ status: 404, description: 'Role not found' })
+  @ApiBearerAuth()
   async findOne(@Param('id') id: string): Promise<Role> {
     return this.rolesService.findOne(id);
   }
@@ -41,6 +45,7 @@ export class RolesController {
   @ApiResponse({ status: 200, description: 'Role changed successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden. Unauthorized access.' })
   @ApiResponse({ status: 404, description: 'User or Role not found' })
+  @ApiBearerAuth()
   async changeRole(@Param('id') userId: string, @Body() newRoleId: string) {   
     return await this.rolesService.changeRole(userId, newRoleId);
   }

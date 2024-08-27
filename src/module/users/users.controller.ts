@@ -10,7 +10,7 @@ import {
   Patch,
   Delete,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
@@ -24,7 +24,6 @@ dayjs.extend(jalaliday);
 
 @ApiTags('(Admin Panel) Users')
 @Controller('users')
-// @UseInterceptors(TokenInterceptor)
 @UseGuards(AuthGuard)
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
@@ -34,6 +33,7 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'List of all users.', type: [User] })
+  @ApiBearerAuth()
   async findAll(): Promise<User[]> {
     return await this.userService.findAll();
   }
@@ -44,6 +44,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'The found user.', type: User })
   @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiBearerAuth()
   async findOne(@Param('id') id: string): Promise<User> {
     return await this.userService.findOne(id);
   }
@@ -65,6 +66,7 @@ export class UsersController {
       },
     },
   })
+  @ApiBearerAuth()
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
     const user = await this.userService.findOneByPhone(createUserDto.phone);
 
@@ -93,6 +95,7 @@ export class UsersController {
       },
     },
   })
+  @ApiBearerAuth()
   async update(
     @Param(':id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -112,6 +115,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'The found user.', type: User })
   @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiBearerAuth()
   async delete(@Param('id') id: string): Promise<User> {
     return await this.userService.deleteUser(id);
   }
