@@ -9,7 +9,7 @@ import { UsersModule } from '../admin/users/users.module';
 import { User, UserSchema } from '../admin/users/entities/user.entity';
 import { Otp, OtpSchema } from 'src/module/otherEntities/Otp.entity';
 import { RolesModule } from '../admin/users/roles/roles.module';
-import { SmsService } from 'src/common/sms/sms.service';
+import { SmsService } from 'src/module/sms/sms.service';
 import { HttpModule } from '@nestjs/axios';
 
 dotenv.config();

@@ -28,7 +28,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserDocument } from '../admin/users/entities/user.entity';
 import * as dotenv from 'dotenv';
 import { AuthGuard } from 'src/common/guard/auth.guard';
-import { SmsService } from 'src/common/sms/sms.service';
+import { SmsService } from 'src/module/sms/sms.service';
 
 dotenv.config();
 dayjs.extend(jalaliday);
@@ -197,5 +197,4 @@ export class AuthController {
     });
     return res.status(200).json({ message: 'کوکی جدید ست شد' });
   }
-
 }
