@@ -10,23 +10,23 @@ export class BlogsService {
   constructor(
     @InjectModel(Blog.name) private blogsModel: Model<BlogDocument>,
   ) {}
-  create(createBlogDto: CreateBlogDto) {
+  async create(createBlogDto: CreateBlogDto) {
     return this.blogsModel.create(createBlogDto);
   }
 
-  findAll() {
+  async findAll() {
     return this.blogsModel.find();
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     return this.blogsModel.findById(id);
   }
 
-  update(id: string, updateBlogDto: UpdateBlogDto) {
-    return this.blogsModel.updateOne({ id }, updateBlogDto);
+  async update(id: string, updateBlogDto: UpdateBlogDto): Promise<any> {
+    return this.blogsModel.updateOne({ _id: id }, { $set: updateBlogDto });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     return this.blogsModel.deleteOne({ id });
   }
 }

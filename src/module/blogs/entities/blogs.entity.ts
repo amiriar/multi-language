@@ -35,14 +35,14 @@ export class Blog {
   @Prop()
   image?: string;
 
-  @Prop({ required: true })
-  body: string; // This can be an HTML string, JSON, or a structured format for various content types
+  @Prop({ required: false })
+  body?: string; // This can be an HTML string, JSON, or a structured format for various content types
 
   @Prop({ required: false })
-  tags: string[];
+  tags?: string[];
 
   @Prop({ default: 0 })
-  likesCount: number;
+  likesCount?: number;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
   likes?: Types.ObjectId[];

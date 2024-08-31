@@ -9,6 +9,8 @@ import {
   UseGuards,
   Req,
   UseInterceptors,
+  UploadedFiles,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,13 +22,17 @@ import {
 import * as dayjs from 'dayjs';
 import * as jalaliday from 'jalaliday';
 import { BlogsService } from './blogs.service';
-import { Blog } from './entities/blogs.entity';
+import { Blog, BlogDocument } from './entities/blogs.entity';
 import { CreateBlogDto } from './dto/create-blogs.dto';
 import { UpdateBlogDto } from './dto/update-blogs.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { Request } from 'express';
 import { UserDocument } from '../admin/users/entities/user.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  AnyFilesInterceptor,
+  FileInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
@@ -49,11 +55,12 @@ export class BlogsController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiBody({ type: CreateBlogDto })
-  create(@Body() createBlogDto: CreateBlogDto, @Req() req: Request) {
+  async create(@Body() createBlogDto: CreateBlogDto, @Req() req: Request) {
     const persianDate = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
     const { id } = req.user as UserDocument;
     const newData = { ...createBlogDto, persianDate, authorId: id };
-    return this.blogService.create(newData);
+    const result = await this.blogService.create(newData);
+    return result.id;
   }
 
   @Get()
@@ -89,25 +96,18 @@ export class BlogsController {
   })
   @ApiResponse({ status: 404, description: 'Blog not found' })
   @ApiBody({ type: UpdateBlogDto })
-  update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogService.update(id, updateBlogDto);
+  async update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
+    const result = await this.blogService.update(id, updateBlogDto);
+    if (result.modifiedCount === 0) {
+      return { success: false, message: 'Blog not found or nothing to update' };
+    }
+    return { success: true };
   }
 
-
-
-
-  @Post(':id/upload') 
+  @Post('upload/:id')
   @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Upload a specific item into blog by ID (draft)' })
-  @ApiResponse({
-    status: 200,
-    description: 'The blog has been successfully updated.',
-    type: Blog,
-  })
-  @ApiResponse({ status: 404, description: 'Blog not found' })
-  @ApiBody({ type: UpdateBlogDto })
   @UseInterceptors(
-    FileInterceptor('blogFile', {
+    FileInterceptor('file', {
       storage: diskStorage({
         destination: (req, file, cb) => {
           const id = req.params.id;
@@ -120,60 +120,40 @@ export class BlogsController {
           cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
           const fileExtName = extname(file.originalname);
           const fileName = `${file.fieldname}-${uniqueSuffix}${fileExtName}`;
           cb(null, fileName);
         },
       }),
       fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'audio/mpeg', 'audio/wav', 'audio/mp3'];
+        const allowedTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/jpg',
+          'image/gif',
+        ];
+
         if (allowedTypes.includes(file.mimetype)) {
           cb(null, true);
         } else {
           cb(new Error('پسوند فایل اشتباه است.'), false);
         }
       },
-      limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
-    }),
-  )
-  @UseInterceptors(
-    FileInterceptor('primary_image', {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const id = req.params.id;
-          const uploadPath = __dirname + `../../../uploads/blogs/${id}`;
-
-          if (!existsSync(uploadPath)) {
-            mkdirSync(uploadPath, { recursive: true });
-          }
-
-          cb(null, uploadPath);
-        },
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const fileExtName = extname(file.originalname);
-          const fileName = `${file.fieldname}-${uniqueSuffix}${fileExtName}`;
-          cb(null, fileName);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (allowedTypes.includes(file.mimetype)) {
-          cb(null, true);
-        } else {
-          cb(new Error('پسوند فایل اشتباه است.'), false);
-        }
+      limits: {
+        fileSize: 10 * 1024 * 1024, // Set a file size limit
       },
-      limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
     }),
   )
-  upload(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogService.update(id, updateBlogDto);
+  async uploadFile(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    console.log('Uploaded file:', file);
+    const filePath = `${file.path}`;
+    return { success: true, path: filePath };
   }
-
-
-
 
   // @Delete(':id')
   // @ApiOperation({ summary: 'Delete a specific blog by ID' })

@@ -60,8 +60,9 @@ export class CreateBlogDto {
     example: '60f9c6b95b2e1c6a4b3c9d24',
     description: 'ID of the author (User)',
   })
+  @IsOptional()
   @IsMongoId()
-  authorId: string;
+  authorId?: string;
 
   @IsOptional()
   @IsBoolean()

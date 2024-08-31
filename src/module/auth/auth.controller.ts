@@ -63,18 +63,18 @@ export class AuthController {
       throw new BadRequestException('شماره تلفن مورد نیاز است.');
     }
     const madeIn = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
-    let user = await this.userService.findOneByPhone(phone);
+    let user = await this.userService.findOneByPhone(phone) as UserDocument;
 
     if (!user) {
-      user = await this.userService.createUser(phone, madeIn);
+      user = await this.userService.createUser(phone, madeIn) as UserDocument;
     }
     if (new Date() < user.otpExpiresAt) {
       throw new ForbiddenException('هنوز کد قبلی شما منقضی نشده است.');
     }
 
     const otp = this.authService.generateOtp();
-    // @ts-ignore
-    await this.authService.saveOtp(user._id, otp);
+    const userId = user.id
+    await this.authService.saveOtp(userId, otp);
 
     await this.SmsService.sendSMS(phone, otp);
 

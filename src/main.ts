@@ -9,8 +9,8 @@ import { NestExpressApplication } from '@nestjs/platform-express'; // Import Nes
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Now you can use useStaticAssets
-  app.useStaticAssets(join(__dirname, '..', 'uploads'));
+  app.useStaticAssets(join(__dirname, '/uploads'));
+  // app.useStaticAssets('/uploads');
   
   app.useGlobalPipes(
     new ValidationPipe({
