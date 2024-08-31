@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsMongoId,
   MaxLength,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -24,8 +25,9 @@ export class CreateBlogDto {
   description?: string;
 
   @ApiProperty({ example: '<p>Blog content goes here</p>', description: 'The main content of the blog' })
+  @IsOptional()
   @IsString()
-  body: string;
+  body?: string;
 
   @ApiProperty({
     example: 'https://example.com/image.jpg',
@@ -60,4 +62,9 @@ export class CreateBlogDto {
   })
   @IsMongoId()
   authorId: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isShown?: boolean;
+
 }

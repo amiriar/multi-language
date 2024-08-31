@@ -26,6 +26,7 @@ import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 
 @Controller('dashboard')
 @UseGuards(AuthGuard)
@@ -53,17 +54,38 @@ export class DashboardController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('profile',{
-    storage: diskStorage({
-      destination: __dirname + '../../../uploads',  // Path where files will be saved
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const fileExtName = extname(file.originalname);
-        const fileName = `${file.fieldname}-${uniqueSuffix}${fileExtName}`;
-        cb(null, fileName);
+  @UseInterceptors(
+    FileInterceptor('profile', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const id = req.params.id;
+          const uploadPath = __dirname + `../../../uploads/profile/${id}`;
+
+          // Check if directory exists, if not, create it
+          if (!existsSync(uploadPath)) {
+            mkdirSync(uploadPath, { recursive: true });
+          }
+
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const fileExtName = extname(file.originalname);
+          const fileName = `${file.fieldname}-${uniqueSuffix}${fileExtName}`;
+          cb(null, fileName);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'audio/mpeg', 'audio/wav'];
+        if (allowedTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error('فرمت فایل صحیح نمیباشد.'), false);
+        }
       },
+      limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
     }),
-  }))
+  )
   async update(
     @Param('id') id: string,
     @Body() updateDashboardDto: UpdateDashboardDto,

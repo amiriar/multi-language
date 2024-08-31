@@ -7,7 +7,9 @@ import { UpdateBlogDto } from './dto/update-blogs.dto';
 
 @Injectable()
 export class BlogsService {
-  constructor(@InjectModel(Blog.name) private blogsModel: Model<BlogDocument>) {}
+  constructor(
+    @InjectModel(Blog.name) private blogsModel: Model<BlogDocument>,
+  ) {}
   create(createBlogDto: CreateBlogDto) {
     return this.blogsModel.create(createBlogDto);
   }
@@ -21,7 +23,7 @@ export class BlogsService {
   }
 
   update(id: string, updateBlogDto: UpdateBlogDto) {
-    return this.blogsModel.updateOne({ id, $set: updateBlogDto });
+    return this.blogsModel.updateOne({ id }, updateBlogDto);
   }
 
   remove(id: string) {

@@ -16,7 +16,7 @@ export class Comment {
   likes: number;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment' }] })
-  replies?: Types.ObjectId[];  // Self-referencing field for nested comments
+  replies?: Types.ObjectId[]; // Self-referencing field for nested comments
 
   @Prop({ required: false })
   date: string;
@@ -34,9 +34,9 @@ export class Blog {
 
   @Prop()
   image?: string;
-  
+
   @Prop({ required: true })
-  body: string;  // This can be an HTML string, JSON, or a structured format for various content types
+  body: string; // This can be an HTML string, JSON, or a structured format for various content types
 
   @Prop({ required: false })
   tags: string[];
@@ -48,7 +48,7 @@ export class Blog {
   likes?: Types.ObjectId[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment' }] })
-  comments?: Types.ObjectId[];  // Reference to the Comment schema
+  comments?: Types.ObjectId[]; // Reference to the Comment schema
 
   @Prop({ required: false })
   timeToRead?: number;
@@ -56,12 +56,15 @@ export class Blog {
   @Prop({ required: false })
   shortLink?: string;
 
-  @Prop()
-  authorId: Types.ObjectId; // Reference to the User schema
+  @Prop({ ref: 'User' })
+  authorId: Types.ObjectId;
 
   @Prop({ required: false })
   date: string;
+
+  @Prop({ default: false })
+  isShown: boolean;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);
-BlogSchema.index({ title: 1 });  // Example of creating an index
+BlogSchema.index({ title: 1, description: 1 });
