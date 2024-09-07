@@ -63,17 +63,17 @@ export class AuthController {
       throw new BadRequestException('شماره تلفن مورد نیاز است.');
     }
     const madeIn = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
-    let user = await this.userService.findOneByPhone(phone) as UserDocument;
+    let user = (await this.userService.findOneByPhone(phone)) as UserDocument;
 
     if (!user) {
-      user = await this.userService.createUser(phone, madeIn) as UserDocument;
+      user = (await this.userService.createUser(phone, madeIn)) as UserDocument;
     }
     if (new Date() < user.otpExpiresAt) {
       throw new ForbiddenException('هنوز کد قبلی شما منقضی نشده است.');
     }
 
     const otp = this.authService.generateOtp();
-    const userId = user.id
+    const userId = user.id;
     await this.authService.saveOtp(userId, otp);
 
     await this.SmsService.sendSMS(phone, otp);
@@ -141,6 +141,8 @@ export class AuthController {
   // @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Logout successful.' })
   async logout(@Res() res: Response, @Req() req: Request) {
+    const user = req.user as UserDocument;
+    if (user) await this.authService.clearRefreshToken(user.id);
     res.clearCookie('accessToken');
     res.send({ message: 'Logout successful' });
   }

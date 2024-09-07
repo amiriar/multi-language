@@ -108,7 +108,7 @@ export class AuthService {
       )) as UserDocument;
 
       if (!user || user.refreshToken !== refreshToken) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException('InvalidRefreshToken');
       }
 
       const newAccessToken = this.jwtService.sign(
@@ -118,7 +118,7 @@ export class AuthService {
 
       return { accessToken: newAccessToken };
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('InvalidRefreshToken');
     }
   }
   // OTP
