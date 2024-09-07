@@ -91,11 +91,11 @@ export class AuthService {
     return user;
   }
 
-  async clearRefreshToken(userId: string) {
-    return await this.userModel.findByIdAndUpdate(userId, {
-      refreshToken: null,
-    });
-  }
+  // async clearRefreshToken(userId: string) {
+  //   return await this.userModel.findByIdAndUpdate(userId, {
+  //     refreshToken: null,
+  //   });
+  // }
 
   async refreshTokens(refreshToken: string) {
     try {
