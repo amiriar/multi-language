@@ -57,10 +57,12 @@ export class BlogsController {
   @ApiBody({ type: CreateBlogDto })
   async create(@Body() createBlogDto: CreateBlogDto, @Req() req: Request) {
     const persianDate = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
+    const shortUrl = this.blogService.generateShortUrl();
+    const shortLink = `${createBlogDto.title.split(" ").join("-")}-${shortUrl}`;
     const { id } = req.user as UserDocument;
-    const newData = { ...createBlogDto, persianDate, authorId: id };
+    const newData = { ...createBlogDto, persianDate, authorId: id, shortLink };
     const result = await this.blogService.create(newData);
-    return result.id;
+    return result;
   }
 
   @Get()

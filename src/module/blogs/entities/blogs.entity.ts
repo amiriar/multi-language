@@ -41,9 +41,6 @@ export class Blog {
   @Prop({ required: false })
   tags?: string[];
 
-  @Prop({ default: 0 })
-  likesCount?: number;
-
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
   likes?: Types.ObjectId[];
 
@@ -53,7 +50,7 @@ export class Blog {
   @Prop({ required: false })
   timeToRead?: number;
 
-  @Prop({ required: false })
+  @Prop({ required: false, unique: true })
   shortLink?: string;
 
   @Prop({ ref: 'User' })
