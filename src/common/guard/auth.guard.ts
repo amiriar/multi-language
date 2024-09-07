@@ -1,14 +1,7 @@
-// src/auth/auth.guard.ts
-
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
-import { UsersService } from 'src/module/admin/users/users.service';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { Request } from "express";
+import { UsersService } from "src/module/admin/users/users.service";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,6 +13,12 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const authorizationHeader = request.headers.authorization;
+    
+    // Skip token validation for logout route
+    const url = request.url;
+    if (url.includes('/logout')) {
+      return true; // Allow access to logout even if the token is expired
+    }
 
     if (!authorizationHeader) {
       throw new UnauthorizedException('لطفا وارد حساب کاربری خود شوید.');
@@ -44,7 +43,11 @@ export class AuthGuard implements CanActivate {
       request.user = user;
       return true;
     } catch (error) {
-      throw new UnauthorizedException('jwt expired');
+      // Handle token expiration
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('jwt expired');
+      }
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }

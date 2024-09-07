@@ -135,13 +135,15 @@ export class AuthController {
   }
 
   @Post('logout')
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @HttpCode(200)
   @ApiOperation({ summary: 'Logout the user' })
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Logout successful.' })
+  @ApiResponse({ status: 206, description: 'Logout successful.' })
   async logout(@Res() res: Response, @Req() req: Request) {
-    res.clearCookie('accessToken');
+    res.clearCookie('accessToken', {
+      sameSite: true,
+    });
     res.send({ message: 'Logout successful' });
   }
 
