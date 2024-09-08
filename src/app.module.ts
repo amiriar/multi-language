@@ -7,6 +7,7 @@ import { AuthModule } from './module/auth/auth.module';
 import { BlogsModule } from './module/blogs/blogs.module';
 import { AuthGuard } from './common/guard/auth.guard';
 import { DashboardModule } from './module/dashboard/dashboard.module';
+import { CatrgoriesModule } from './module/admin/catrgories/catrgories.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { DashboardModule } from './module/dashboard/dashboard.module';
     BlogsModule,
     AuthModule,
     DashboardModule,
+    CatrgoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthGuard],

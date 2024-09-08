@@ -5,8 +5,11 @@ import {
   IsNumber,
   IsMongoId,
   MaxLength,
+  IsBoolean,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class UpdateBlogDto {
   @ApiProperty({ example: 'Updated Blog Title', description: 'Updated title of the blog', required: false })
@@ -71,6 +74,10 @@ export class UpdateBlogDto {
   @IsString()
   shortLink?: string;
 
+  @IsOptional()
+  @IsBoolean()
+  isShown?: boolean;
+
   @ApiProperty({
     example: '60f9c6b95b2e1c6a4b3c9d24',
     description: 'ID of the updated author (User)',
@@ -79,4 +86,42 @@ export class UpdateBlogDto {
   @IsOptional()
   @IsMongoId()
   authorId?: string;
+}
+
+class LanguageDto {
+  @ApiProperty({ example: 'en', description: 'Language code' })
+  @IsString()
+  language: string;
+
+  @ApiProperty({ example: 'A Great Blog Title in English', description: 'Title in specific language' })
+  @IsString()
+  title: string;
+
+  @ApiProperty({
+    example: 'A short description of the blog content in a specific language',
+    maxLength: 500,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+
+  @ApiProperty({ example: '<p>Blog content goes here in a specific language</p>', description: 'Body in a specific language' })
+  @IsOptional()
+  @IsString()
+  body?: string;
+
+  @ApiProperty({ example: true, description: 'Visibility of the blog in the given language' })
+  @IsOptional()
+  @IsBoolean()
+  isShown?: boolean;
+}
+
+
+export class UpdateBlogLanguagesDto {
+  @ApiProperty({ type: [LanguageDto], description: 'New languages to be added or updated' })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => LanguageDto)
+  languages: LanguageDto[];
 }

@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -44,7 +45,6 @@ dayjs.extend(jalaliday);
 @ApiBearerAuth()
 export class BlogsController {
   constructor(private readonly blogService: BlogsService) {}
-
   @Post()
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Create a new blog' })
@@ -58,9 +58,20 @@ export class BlogsController {
   async create(@Body() createBlogDto: CreateBlogDto, @Req() req: Request) {
     const persianDate = dayjs().calendar('jalali').format('YYYY/MM/DD HH:mm');
     const shortUrl = this.blogService.generateShortUrl();
-    const shortLink = `${createBlogDto.title.split(" ").join("-")}-${shortUrl}`;
+
+    const preferredLanguage =
+      createBlogDto.languages.find(
+        (lang) => lang.language === 'en' || lang.language === 'fa',
+      ) || createBlogDto.languages[0];
+
+    if (!preferredLanguage || !preferredLanguage.title) {
+      throw new BadRequestException('زبان و یا عنوان مناسبی وجود ندارد..');
+    }
+
+    const shortLink = `${preferredLanguage.title.split(' ').join('-')}-${shortUrl}`;
     const { id } = req.user as UserDocument;
     const newData = { ...createBlogDto, persianDate, authorId: id, shortLink };
+
     const result = await this.blogService.create(newData);
     return result;
   }
@@ -88,7 +99,7 @@ export class BlogsController {
     return this.blogService.findOne(id);
   }
 
-  @Patch(':id') // draft
+  @Patch(':id')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Update a specific blog by ID' })
   @ApiResponse({
@@ -99,7 +110,7 @@ export class BlogsController {
   @ApiResponse({ status: 404, description: 'Blog not found' })
   @ApiBody({ type: UpdateBlogDto })
   async update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    const result = await this.blogService.update(id, updateBlogDto);
+    const result = await this.blogService.update(id, {...updateBlogDto, isShown: false });
     if (result.modifiedCount === 0) {
       return { success: false, message: 'Blog not found or nothing to update' };
     }
